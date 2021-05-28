@@ -12,6 +12,8 @@ public class UserDao {
 
     private static final String CREATE_USER_QUERY = "INSERT INTO users(username, email, password) VALUES(?, ?, ?)";
     private static final String FIND_USER_QUERY = "SELECT * FROM users WHERE id = ?";
+    private static final String FIND_NAME_USER_QUERY = "SELECT * FROM users WHERE username = ?";
+    private static final String FIND_EMAIL_USER_QUERY = "SELECT * FROM users WHERE email = ?";
     private static final String FIND_ALL_USER_QUERY = "SELECT * FROM users";
     private static final String UPDATE_USER_QUERY = "UPDATE users SET email = ?, username = ?, password = ? WHERE id = ?";
     private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE id = ?";
@@ -74,16 +76,7 @@ public class UserDao {
         User[] users = new User[0];
         try (Connection connection = DbUtil.connect(DB_NAME)) {
             PreparedStatement prepStmt = connection.prepareStatement(FIND_ALL_USER_QUERY);
-            ResultSet resultSet = prepStmt.executeQuery();
-            while (resultSet.next()) {
-                users = Arrays.copyOf(users, users.length + 1);
-                int identify = resultSet.getInt("id");
-                String email = resultSet.getString("email");
-                String username = resultSet.getString("username");
-                String password = resultSet.getString("password");
-                users[users.length - 1] = new User(identify, email, username, password);
-            }
-            return users;
+            return getUsers(users, prepStmt);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return null;
@@ -100,4 +93,42 @@ public class UserDao {
         }
 
     }
+
+    public User[] findName(String name) {
+        User[] users = new User[0];
+        try (Connection connection = DbUtil.connect(DB_NAME)) {
+            PreparedStatement prepStmt = connection.prepareStatement(FIND_NAME_USER_QUERY);
+            prepStmt.setString(1, name);
+            return getUsers(users, prepStmt);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            return null;
+        }
+    }
+
+    public User[] findEmail(String email) {
+        User[] users = new User[0];
+        try (Connection connection = DbUtil.connect(DB_NAME)) {
+            PreparedStatement prepStmt = connection.prepareStatement(FIND_EMAIL_USER_QUERY);
+            prepStmt.setString(1, email);
+            return getUsers(users, prepStmt);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            return null;
+        }
+    }
+
+    private User[] getUsers(User[] users, PreparedStatement prepStmt) throws SQLException {
+        ResultSet resultSet = prepStmt.executeQuery();
+        while (resultSet.next()) {
+            users = Arrays.copyOf(users, users.length + 1);
+            int identify = resultSet.getInt("id");
+            String email = resultSet.getString("email");
+            String username = resultSet.getString("username");
+            String password = resultSet.getString("password");
+            users[users.length - 1] = new User(identify, email, username, password);
+        }
+        return users;
+    }
+
 }
