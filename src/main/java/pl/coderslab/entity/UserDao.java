@@ -18,7 +18,7 @@ public class UserDao {
     private static final String UPDATE_USER_QUERY = "UPDATE users SET email = ?, username = ?, password = ? WHERE id = ?";
     private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE id = ?";
 
-    public User create(User user) {
+    public void create(User user) {
         try (Connection connection = DbUtil.connect(DB_NAME);
              PreparedStatement prepStmt = connection.prepareStatement(CREATE_USER_QUERY, Statement.RETURN_GENERATED_KEYS)) {
             prepStmt.setString(1, user.getUserName());
@@ -31,10 +31,8 @@ public class UserDao {
             if (resultSet.next()){
                 user.setId(resultSet.getInt(1));
             }
-            return user;
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-            return null;
         }
     }
 
@@ -57,7 +55,7 @@ public class UserDao {
         return null;
     }
 
-    public void update(User user) {
+    public boolean update(User user) {
         try (Connection connection = DbUtil.connect(DB_NAME)) {
             PreparedStatement prepStmt = connection.prepareStatement(UPDATE_USER_QUERY);
             prepStmt.setString(1, user.getEmail());
@@ -66,8 +64,10 @@ public class UserDao {
             prepStmt.setString(3, password);
             prepStmt.setInt(4, user.getId());
             prepStmt.executeUpdate();
+            return true;
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+            return false;
         }
     }
 
@@ -83,34 +83,31 @@ public class UserDao {
         }
     }
 
-    public void delete(int id) {
+    public boolean delete(int id) {
         try (Connection connection = DbUtil.connect(DB_NAME)) {
             PreparedStatement prepStmt = connection.prepareStatement(DELETE_USER_QUERY);
             prepStmt.setInt(1, id);
             prepStmt.executeUpdate();
+            return true;
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+            return false;
         }
-
     }
 
     public User[] findName(String name) {
-        User[] users = new User[0];
-        try (Connection connection = DbUtil.connect(DB_NAME)) {
-            PreparedStatement prepStmt = connection.prepareStatement(FIND_NAME_USER_QUERY);
-            prepStmt.setString(1, name);
-            return getUsers(users, prepStmt);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-            return null;
-        }
+        return getUsers(name, FIND_NAME_USER_QUERY);
     }
 
     public User[] findEmail(String email) {
+        return getUsers(email, FIND_EMAIL_USER_QUERY);
+    }
+
+    private User[] getUsers(String name, String findNameUserQuery) {
         User[] users = new User[0];
         try (Connection connection = DbUtil.connect(DB_NAME)) {
-            PreparedStatement prepStmt = connection.prepareStatement(FIND_EMAIL_USER_QUERY);
-            prepStmt.setString(1, email);
+            PreparedStatement prepStmt = connection.prepareStatement(findNameUserQuery);
+            prepStmt.setString(1, name);
             return getUsers(users, prepStmt);
         } catch (SQLException throwables) {
             throwables.printStackTrace();

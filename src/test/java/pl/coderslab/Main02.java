@@ -37,37 +37,51 @@ public class Main02 {
         UserDao userDao = new UserDao();
         User user = userDao.read(id);
         if (user != null) {
-            System.out.println(user);
-            System.out.println("Który parametr chcesz zaktualizować ? Wpisz: email, name, password");
-            String menu = scanner.nextLine().trim();
-            switch (menu) {
-                case "email" -> {
-                    System.out.println("Wpisz nowy email:");
-                    String email = scanner.nextLine().trim();
-                    user.setEmail(email);
-                } case "name" -> {
-                    System.out.println("Wpisz nowy name:");
-                    String name = scanner.nextLine().trim();
-                    user.setUserName(name);
-                } case "password" -> {
-                    System.out.println("Wpisz stare hasło:");
-                    String password = scanner.nextLine().trim();
-                    if (BCrypt.checkpw(password, user.getPassword())) {
-                        System.out.println("Wprowadz nowe haslo: ");
-                        password = scanner.nextLine().trim();
-                        user.setPassword(password);
-                    } else {
-                        System.out.println("Błędne hasło, aktualizacja niemożliwa");
-                    }
-                } default -> System.out.println(ConsoleColors.RED_BOLD + "Wrong command" + ConsoleColors.RESET);
-            }
-            userDao.update(user);
-            user = userDao.read(id);
-            System.out.println("Dane po aktualizacji");
-            System.out.println(user);
+            update(scanner, id, userDao, user);
         } else {
             System.out.println("Id nie istnieje");
         }
+    }
+
+    private static void update(Scanner scanner, int id, UserDao userDao, User user) {
+        printUser(user);
+        System.out.println("Który parametr chcesz zaktualizować ? Wpisz: email, name, password");
+        String menu = scanner.nextLine().trim();
+        int temp = 0;
+        switch (menu) {
+            case "email" -> {
+                System.out.println("Wpisz nowy email:");
+                String email = scanner.nextLine().trim();
+                user.setEmail(email);
+                temp = 1;
+            } case "name" -> {
+                System.out.println("Wpisz nowy name:");
+                String name = scanner.nextLine().trim();
+                user.setUserName(name);
+                temp = 1;
+            } case "password" -> {
+                System.out.println("Wpisz stare hasło:");
+                String password = scanner.nextLine().trim();
+                if (BCrypt.checkpw(password, user.getPassword())) {
+                    System.out.println("Wprowadz nowe haslo: ");
+                    password = scanner.nextLine().trim();
+                    user.setPassword(password);
+                    temp = 1;
+                } else {
+                    System.out.println("Błędne hasło, aktualizacja niemożliwa");
+                }
+            } default -> System.out.println(ConsoleColors.RED_BOLD + "Wrong command" + ConsoleColors.RESET);
+        }
+        if (userDao.update(user) && temp == 1) {
+            user = userDao.read(id);
+            System.out.println("Dane po aktualizacji");
+            printUser(user);
+        }
+    }
+
+    private static void printUser(User user) {
+        headUsersTable();
+        System.out.println(user);
     }
 
     private static void printUsers() {
@@ -76,7 +90,7 @@ public class Main02 {
         int id = idRead();
         User users = userDao.read(id);
         if (users != null) {
-            System.out.println(users);
+            printUser(users);
         } else {
             System.out.println("Brak wpisu w bazie");
         }
@@ -121,7 +135,11 @@ public class Main02 {
         System.out.println("Wpisz którego użytkownika chcesz usunąć:");
         int id = idRead();
         UserDao userDao = new UserDao();
-        userDao.delete(id);
+        if (userDao.delete(id)){
+            System.out.println("Wpis usunięty");
+        } else {
+            System.out.println(ConsoleColors.RED_BOLD + "Wpis nie usuniety" + ConsoleColors.RESET);
+        }
     }
 
     private static int idRead() {
@@ -163,11 +181,16 @@ public class Main02 {
 
     private static void printDatabase(User[] users) {
         if (users.length != 0) {
+            headUsersTable();
             for (User element:users) {
                 System.out.println(element);
             }
         } else {
             System.out.println("Brak danych w bazie");
         }
+    }
+
+    private static void headUsersTable() {
+        System.out.printf("%3s. %-15s %-35s%n", "id", "user name", "email");
     }
 }
