@@ -10,3 +10,6 @@ password VARCHAR(60) NOT NULL,
 PRIMARY KEY (id)
 );
 
+# reset id
+ALTER TABLE users AUTO_INCREMENT = 1;
+
