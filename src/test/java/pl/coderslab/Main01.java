@@ -13,7 +13,8 @@ public class Main01 {
         User user2 = new User();
         user2.setUserName("M1ateusz");
         user2.setEmail("Ma1teusz.lewandowski@coderslab.pl");
-        user2.setPassword("012ls123");
+        user2.setPassword("Pass");
         userDao.create(user2);
+
     }
 }

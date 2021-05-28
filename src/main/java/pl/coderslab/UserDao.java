@@ -1,5 +1,7 @@
 package pl.coderslab;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -18,9 +20,9 @@ public class UserDao {
             PreparedStatement prepStmt = connection.prepareStatement(insertNewUser);
             prepStmt.setString(1, user.getUserName());
             prepStmt.setString(2, user.getEmail());
-            prepStmt.setString(3, user.getPassword());
-            int modifiedCount = prepStmt.executeUpdate();
-            System.out.println("modifiedCount = " + modifiedCount);
+            String password = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+            prepStmt.setString(3, password);
+            prepStmt.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
